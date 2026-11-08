@@ -1,0 +1,21 @@
+name: Construire l'installeur Windows
+on:
+  workflow_dispatch:
+  push:
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt pyinstaller
+      - run: python make_icon.py
+      - run: pyinstaller --noconfirm --clean --noconsole --onefile --name AdhanMarseille --icon icon.ico --collect-all winrt --collect-data tzdata app.py
+      - run: choco install innosetup -y
+      - run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AdhanMarseille_Setup
+          path: Output/AdhanMarseille_Setup.exe
